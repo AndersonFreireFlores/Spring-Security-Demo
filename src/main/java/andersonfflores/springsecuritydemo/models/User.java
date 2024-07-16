@@ -36,6 +36,12 @@ public class User implements UserDetails {
         this.role = role;
     }
 
+    public User( String name, String password,UserRole role) {
+        this.role = role;
+        this.password = password;
+        this.name = name;
+    }
+
     public UUID getId() {
         return id;
     }
