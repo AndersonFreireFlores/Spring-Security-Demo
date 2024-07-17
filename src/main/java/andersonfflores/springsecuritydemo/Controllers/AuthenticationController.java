@@ -1,7 +1,9 @@
 package andersonfflores.springsecuritydemo.Controllers;
 
 import andersonfflores.springsecuritydemo.Repositories.UserRepository;
+import andersonfflores.springsecuritydemo.infra.security.TokenService;
 import andersonfflores.springsecuritydemo.models.DTOs.AuthenticationDTO;
+import andersonfflores.springsecuritydemo.models.DTOs.LoginResponseDTO;
 import andersonfflores.springsecuritydemo.models.DTOs.RegisterDTO;
 import andersonfflores.springsecuritydemo.models.Enums.UserRole;
 import andersonfflores.springsecuritydemo.models.User;
@@ -22,17 +24,22 @@ public class AuthenticationController {
     private final AuthenticationManager authenticationManager;
 
     private final UserRepository userRepository;
+    private final TokenService tokenService;
 
-    public AuthenticationController(AuthenticationManager authenticationManager, UserRepository userRepository) {
+    public AuthenticationController(AuthenticationManager authenticationManager, UserRepository userRepository, TokenService tokenService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.tokenService = tokenService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody @Validated RegisterDTO data ){
+    public ResponseEntity login(@RequestBody @Validated AuthenticationDTO data ){
     var namePassword = new UsernamePasswordAuthenticationToken(data.name(), data.password());
     var auth = authenticationManager.authenticate(namePassword);
-    return ResponseEntity.ok().build();
+
+    var token = tokenService.generateToken((User) auth.getPrincipal());
+
+    return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
     @PostMapping("/register")

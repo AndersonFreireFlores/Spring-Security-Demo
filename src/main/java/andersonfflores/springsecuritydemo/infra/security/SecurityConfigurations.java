@@ -11,6 +11,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -18,8 +19,11 @@ public class SecurityConfigurations {
 
     private final AuthenticationConfiguration authConfiguration;
 
-    public SecurityConfigurations(AuthenticationConfiguration authConfiguration) {
+    private final SecurityFilter securityFilter;
+
+    public SecurityConfigurations(AuthenticationConfiguration authConfiguration, SecurityFilter securityFilter) {
         this.authConfiguration = authConfiguration;
+        this.securityFilter = securityFilter;
     }
 
     @Bean
@@ -32,6 +36,7 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.POST, "/users")
                         .hasRole("ADMIN")
                 .anyRequest().authenticated())
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -39,7 +44,7 @@ public class SecurityConfigurations {
     public AuthenticationManager authenticationManager() throws Exception {
         return authConfiguration.getAuthenticationManager();
     }
-
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
